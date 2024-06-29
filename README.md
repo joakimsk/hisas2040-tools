@@ -18,7 +18,7 @@ Optional processing (histogram equalization and halfing in across-track directio
 Data is stored as a greyscale tiff with either 8 or 16 bit resolution.
 
 ## Usage
-Put .xtf into "xtfs"
+Put .xtf into "xtfs", output comes in folder "tiffs".
 
 Run with defaults or add options for histogram equalization
 xtf2tiff.py -heq
