@@ -23,8 +23,11 @@ Put .xtf into "xtfs", output comes in folder "tiffs".
 Run with defaults or add options for histogram equalization
 xtf2tiff.py -heq
 
-![Alt text](media/sample_heq_800px.jpg?raw=true "Sample with histogram equalization")
-![Alt text](media/sample_800px.jpg?raw=true "Sample without histogram equalization")
+Sonar image without histogram equalization:
+![Alt text](media/sample.jpg?raw=true "Sample without histogram equalization")
+
+Sonar image with histogram equalization:
+![Alt text](media/sample_heq.jpg?raw=true "Sample with histogram equalization")
 
 ## Sample data
 This project contains sample data gathered by Institute of Marine Research using a Kongsberg Munin+ 1500m AUV with a Kongsberg HiSAS 2040 synthetic aperture sonar.
