@@ -42,6 +42,9 @@ Script will try to combine all tiffs vertically. This requires the same width, w
 ## Usage click_crop.py
 Target cropping, opens an image in full resolution. Click on an object to make an roi, saved as roi_x.png. Press q on keyboard to quit.
 
+## Usage click_crop_tk.py
+Target cropping, opens an image in full resolution. Click on an object to make an roi, saved as roi_x.png, and a csv-file with ROIs.
+
 ## Sample data
 This project contains sample data gathered by Institute of Marine Research using a Kongsberg Munin+ 1500m AUV with a Kongsberg HiSAS 2040 synthetic aperture sonar.
 
