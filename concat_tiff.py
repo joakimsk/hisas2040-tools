@@ -1,6 +1,6 @@
+import argparse
 from PIL import Image
 from pathlib import Path
-import argparse
 
 def concat_tiff(tiff_path):
     folder = Path(tiff_path)
@@ -28,17 +28,20 @@ def concat_tiff(tiff_path):
 
     concatenated_image.save("concatenated.tiff")
 
-def main(folder_path):
-    folder = Path(folder_path)
+def main(args):
+
+    arg_folder_path = args.folder_path
+
+    folder = Path(arg_folder_path)
     if not folder.is_dir():
-        print(f"The provided path {folder_path} is not a directory.")
+        print(f"The provided path {arg_folder_path} is not a directory.")
         return
 
-    concat_tiff(folder_path)
+    concat_tiff(arg_folder_path)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process all files in a specified folder.')
     parser.add_argument('folder_path', default="tiffs", nargs='?', type=str, help='Path to the folder containing files to process.')
     args = parser.parse_args()
     
-    main(args.folder_path)
+    main(args)
