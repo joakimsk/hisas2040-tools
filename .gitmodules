@@ -1,0 +1,3 @@
+[submodule "external/pyxtf"]
+	path = external/pyxtf
+	url = git@github.com:joakimsk/pyxtf.git
