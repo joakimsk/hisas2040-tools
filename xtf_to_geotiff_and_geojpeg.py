@@ -7,11 +7,11 @@ Toggle concatenate_channel weighted argument to fit your data requirements.
 import math
 import numpy as np
 from PIL import Image
-from haversine import inverse_haversine, Unit
 import rasterio
-import xml.etree.ElementTree as ET
 
 import pyxtf
+
+import utils # Local utility-file
 
 xtf_input = "xtfs/sasi-S-upper-20240314-110644-wrk_l1.xtf" # Input XTF file
 bitdepth = 8 # Use 8 or 16 bits to store the pixel values
@@ -19,94 +19,20 @@ resize_half_width = True # Resize image, half width
 weighted = True # Toggle concatenate_channel weighted argument to fit your data input requirements
 
 # Output filepaths
-tif_output = f"{xtf_input}.tif"
-jpeg_output = f"{xtf_input}.jpeg"
-jgw_output = f"{xtf_input}.jgw"
-aux_xml_output = f"{xtf_input}.jpeg.aux.xml"
-geotiff_output = f"{xtf_input}_geotiff.tif"
-
-def _write_jgw(jgw_output, transform):
-    tfw = open(jgw_output, 'wt')
-    tfw.write(f"{transform.a}\n")
-    tfw.write(f"{transform.d}\n")
-    tfw.write(f"{transform.b}\n")
-    tfw.write(f"{transform.e}\n")
-    tfw.write(f"{transform.c}\n")
-    tfw.write(f"{transform.f}\n")
-    tfw.close()
-
-def _write_pam_aux_xml(aux_xml_output, srs_txt, transform):
-    root = ET.Element("PAMDataset")
-    srs = ET.SubElement(root, "SRS", attrib={"dataAxisToSRSAxisMapping": "2,1"}) # Input to GDAL, "2,1" tells that the first data axis (rows) shall be interpreted as second SRS axis (Y/Latitude); and the other way around
-    srs.text = srs_txt
-    geotransform = ET.SubElement(root, "GeoTransform")
-    geotransform.text = f"{transform.c}, {transform.a}, {transform.b}, {transform.f}, {transform.d}, {transform.e}"
-    metadata = ET.SubElement(root, "Metadata")
-    mdi_area = ET.SubElement(metadata, "MDI", attrib={"key": "AREA_OR_POINT"})
-    mdi_area.text = "Area"
-    pamrasterband = ET.SubElement(root, "PAMRasterBand", attrib={"band": "1"})
-    band_metadata = ET.SubElement(pamrasterband, "Metadata", attrib={"domain": "IMAGE_STRUCTURE"})
-    mdi_compression = ET.SubElement(band_metadata, "MDI", attrib={"key": "COMPRESSION"})
-    mdi_compression.text = "JPEG"
-
-    ET.indent(root)
-
-    tree = ET.ElementTree(root)
-    tree.write(aux_xml_output, encoding="utf-8", xml_declaration=False)
-
-def _calculate_acoustic_bearing_radians(SensorHeading, BEARING_90_DEG_STARBOARD):
-    # Calculate offset to sensor heading, this is acoustic bearing (radians), depends on channel port or starboard
-    acoustic_bearing_radians = None
-    if BEARING_90_DEG_STARBOARD:
-        acoustic_bearing_radians = math.radians(SensorHeading + 90)
-    else:
-        acoustic_bearing_radians = math.radians(SensorHeading - 90)
-
-    return acoustic_bearing_radians
-
-def _calculate_outermost_latlon(sensor_lat, sensor_lon, acoustic_bearing_radians, groundrange):
-    # Calculate the latitude and longitude of the GroundRange outermost point, in the acoustic bearing
-    p1 = (sensor_lat, sensor_lon)
-    p2 = inverse_haversine(p1, groundrange, acoustic_bearing_radians, Unit.METERS)
-    return p2
-
-def _create_gcps(sensor_pos_first_ping, sensor_pos_last_ping, outer_pos_first_ping, outer_pos_last_ping, is_starboard):
-    # Create GroundControlPoint, four points used to translate the image pixels onto the map
-    #
-    # Assumptions:
-    # Data captured from starboard:
-    # Bottom left pixel is sensor position first ping
-    # Top left pixel is sensor position last ping
-    #
-    # Data captured from port:
-    # Bottom right pixel is sensor position first ping
-    # Top right pixel is sensor position last ping
-
-    gcps = None
-    if is_starboard == True:
-        gcps = [ # X is longitude, Y is latitude
-            rasterio.control.GroundControlPoint(row=0,         col=0,         x=sensor_pos_last_ping[0],         y=sensor_pos_last_ping[1],    z=0), # top left pixel
-            rasterio.control.GroundControlPoint(row=0,         col=width - 1, x=outer_pos_last_ping[0],   y=outer_pos_last_ping[1],    z=0), # top right pixel
-            rasterio.control.GroundControlPoint(row=height - 1, col=width - 1, x=outer_pos_first_ping[0],   y=outer_pos_first_ping[1], z=0), # bottom right pixel
-            rasterio.control.GroundControlPoint(row=height - 1, col=0,         x=sensor_pos_first_ping[0],         y=sensor_pos_first_ping[1], z=0) # bottom left pixel
-        ]
-    else: # Port
-        gcps = [ # X is longitude, Y is latitude
-            rasterio.control.GroundControlPoint(row=0,         col=0,         x=outer_pos_last_ping[0],         y=outer_pos_last_ping[1],    z=0), # top left pixel
-            rasterio.control.GroundControlPoint(row=0,         col=width - 1, x=sensor_pos_last_ping[0],   y=sensor_pos_last_ping[1],    z=0), # top right pixel
-            rasterio.control.GroundControlPoint(row=height - 1, col=width - 1, x=sensor_pos_first_ping[0],   y=sensor_pos_first_ping[1], z=0), # bottom right pixel
-            rasterio.control.GroundControlPoint(row=height - 1, col=0,         x=outer_pos_first_ping[0],         y=outer_pos_first_ping[1], z=0) # bottom left pixel
-        ]
-    return gcps
+tif_output = f"output/{xtf_input}.tif"
+jpeg_output = f"output/{xtf_input}.jpeg"
+jgw_output = f"output/{xtf_input}.jgw"
+aux_xml_output = f"output/{xtf_input}.jpeg.aux.xml"
+geotiff_output = f"output/{xtf_input}_geotiff.tif"
 
 def calculate_outermost_latlon_from_ping(file_header: pyxtf.XTFFileHeader, ping_header: pyxtf.XTFPingChanHeader, is_starboard=None):
     sensor_lat, sensor_lon = ping_header.SensorYcoordinate, ping_header.SensorXcoordinate
-    acoustic_bearing_radians = _calculate_acoustic_bearing_radians(ping_header.SensorHeading, is_starboard)
+    acoustic_bearing_radians = utils.calculate_acoustic_bearing_radians(ping_header.SensorHeading, is_starboard)
     
     ping_chan_header = ping_header.ping_chan_headers[0]
     GroundRange = ping_chan_header.GroundRange
 
-    outermost_lat, outermost_lon = _calculate_outermost_latlon(sensor_lat, sensor_lon, acoustic_bearing_radians, GroundRange)
+    outermost_lat, outermost_lon = utils.calculate_outermost_latlon(sensor_lat, sensor_lon, acoustic_bearing_radians, GroundRange)
     return sensor_lat, sensor_lon, outermost_lat, outermost_lon
 
 def make_sidescan_sonar_image(fh, p, bitdepth=8, resize_half_width=False, weighted=False):
@@ -204,14 +130,14 @@ if pyxtf.XTFHeaderType.sonar in p:
     outer_pos_last_ping = (lp_o_lon, lp_o_lat)
 
     # Calculate and compute an Affine transform
-    gcps = _create_gcps(sensor_pos_first_ping, sensor_pos_last_ping, outer_pos_first_ping, outer_pos_last_ping, is_starboard)
+    gcps = utils.create_gcps(sensor_pos_first_ping, sensor_pos_last_ping, outer_pos_first_ping, outer_pos_last_ping, is_starboard)
     transform = rasterio.transform.from_gcps(gcps)
     
     # Write worldfiles, sidecar files for the jpeg to position and transform the jpeg in the map
     target_crs = rasterio.CRS.from_epsg(4326)
     srs_wkt = target_crs.to_wkt()
-    _write_pam_aux_xml(aux_xml_output, srs_wkt, transform)
-    _write_jgw(jgw_output, transform)
+    utils.write_pam_aux_xml(aux_xml_output, srs_wkt, transform)
+    utils.write_jgw(jgw_output, transform)
 
     profile.update({
         'crs': target_crs, # EPSG:4326 is assumed
