@@ -72,7 +72,7 @@ def calculate_outermost_latlon(sensor_lat, sensor_lon, acoustic_bearing_radians,
     p2 = inverse_haversine(p1, groundrange, acoustic_bearing_radians, Unit.METERS)
     return p2
 
-def create_gcps(sensor_pos_first_ping, sensor_pos_last_ping, outer_pos_first_ping, outer_pos_last_ping, is_starboard):
+def create_gcps(sensor_pos_first_ping, sensor_pos_last_ping, outer_pos_first_ping, outer_pos_last_ping, is_starboard, height, width):
     # Create GroundControlPoint, four points used to translate the image pixels onto the map
     #
     # Assumptions:

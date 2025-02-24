@@ -4,26 +4,34 @@ Toggle resize_half_width if your image width needs to be resized to half width.
 Toggle concatenate_channel weighted argument to fit your data requirements.
 """
 
-import math
 import numpy as np
 from PIL import Image
 import rasterio
+from pathlib import Path
 
 import pyxtf
 
 import utils # Local utility-file
 
-xtf_input = "xtfs/sasi-S-upper-20240314-110644-wrk_l1.xtf" # Input XTF file
+filename = Path("sasi-S-upper-20240314-110644-wrk_l1.xtf")
+file_stem = filename.stem
+xtf_input = Path(f"xtfs/{filename}") # Input XTF file
+
 bitdepth = 8 # Use 8 or 16 bits to store the pixel values
 resize_half_width = True # Resize image, half width
 weighted = True # Toggle concatenate_channel weighted argument to fit your data input requirements
 
 # Output filepaths
-tif_output = f"output/{xtf_input}.tif"
-jpeg_output = f"output/{xtf_input}.jpeg"
-jgw_output = f"output/{xtf_input}.jgw"
-aux_xml_output = f"output/{xtf_input}.jpeg.aux.xml"
-geotiff_output = f"output/{xtf_input}_geotiff.tif"
+output_path = Path(f"output")
+output_path.mkdir(parents=True, exist_ok=True)
+
+tif_output = Path(f"output/{file_stem}.tif")
+jpeg_output = Path(f"output/{file_stem}.jpeg")
+jgw_output = Path(f"output/{file_stem}.jgw")
+aux_xml_output = Path(f"output/{file_stem}.jpeg.aux.xml")
+geotiff_output = Path(f"output/{file_stem}_geotiff.tif")
+
+
 
 def calculate_outermost_latlon_from_ping(file_header: pyxtf.XTFFileHeader, ping_header: pyxtf.XTFPingChanHeader, is_starboard=None):
     sensor_lat, sensor_lon = ping_header.SensorYcoordinate, ping_header.SensorXcoordinate
@@ -95,9 +103,9 @@ if pyxtf.XTFHeaderType.sonar in p:
     sonar_image = make_sidescan_sonar_image(fh, p, bitdepth=bitdepth, resize_half_width=resize_half_width, weighted=weighted)
 
     # Write sonar image data to files, no georeferencing at this stage
-    sonar_image.save(f'{tif_output}')
+    sonar_image.save(tif_output)
     print("TIF without georeference saved:", tif_output)
-    sonar_image.save(f'{jpeg_output}')
+    sonar_image.save(jpeg_output)
     print("JPEG without georeference saved:", jpeg_output)
 
     sonar_ch = p[pyxtf.XTFHeaderType.sonar]
@@ -130,7 +138,7 @@ if pyxtf.XTFHeaderType.sonar in p:
     outer_pos_last_ping = (lp_o_lon, lp_o_lat)
 
     # Calculate and compute an Affine transform
-    gcps = utils.create_gcps(sensor_pos_first_ping, sensor_pos_last_ping, outer_pos_first_ping, outer_pos_last_ping, is_starboard)
+    gcps = utils.create_gcps(sensor_pos_first_ping, sensor_pos_last_ping, outer_pos_first_ping, outer_pos_last_ping, is_starboard, height, width)
     transform = rasterio.transform.from_gcps(gcps)
     
     # Write worldfiles, sidecar files for the jpeg to position and transform the jpeg in the map
