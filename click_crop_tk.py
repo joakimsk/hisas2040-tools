@@ -68,7 +68,10 @@ class ImageApp:
 
         # Draw a rectangle representing the cropping box
         cv2.rectangle(self.display_img, self.top_left, self.bottom_right, (255, 0, 0), 2)
-        label = f"{self.square_size}x{self.square_size} - c{x},{y}"
+
+        cm_per_pixel = 2*0.9030351932265315 # *2 for halfed aspect ratio
+        print(self.img.shape[0])
+        label = f"{self.square_size}x{self.square_size} - c{x},{y} - {cm_per_pixel*x/100:.2f}m"
         cv2.putText(self.display_img, label, (self.top_left[0], self.top_left[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
         # Update the image on the canvas

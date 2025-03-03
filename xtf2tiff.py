@@ -49,6 +49,20 @@ def convert_xtf_tiff(file_path: str, output_folder_path: str, output_bitdepth: i
         logging.info(f"Concatenating pings in channel")
         np_chan = concatenate_channel(p[XTFHeaderType.sonar], file_header=fh, channel=0, weighted=True)
 
+        #for ping in p[XTFHeaderType.sonar]:
+            #print(ping)
+            #print(ping.ping_chan_headers[0])
+            #print(ping.SlantRange, ping.GroundRange)
+        #    primary_altitude = ping.SensorPrimaryAltitude
+        #    calculated_altitude = np.sqrt(np.square(ping.ping_chan_headers[0].SlantRange) - np.square(ping.ping_chan_headers[0].GroundRange))
+        #    #print("Detaalt", primary_altitude-calculated_altitude)
+            #print(ping.XTFPingChanHeader)
+        #    print(ping.SensorYcoordinate, ping.SensorXcoordinate, ping.PingNumber, ping.SoundVelocity)
+        #print(fh.NavUnits, fh.NavigationLatency)
+        #print("VoltScale", fh.ChanInfo[0].VoltScale, "Frequency", fh.ChanInfo[0].Frequency, "SampleFormat", fh.ChanInfo[0].SampleFormat)
+        #print()
+     
+        #exit()
         np.set_printoptions(threshold=np.inf, linewidth=200, precision=3, formatter={'float': '{:,.0f}'.format}, suppress=True)  # Ensure entire array is displayed
         
         print("Columns before cleanup:", np_chan.shape[1])
