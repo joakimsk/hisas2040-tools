@@ -32,6 +32,7 @@ def convert_xtf_tiff(file_path: str, output_folder_path: str, output_bitdepth: i
     packets_in_file = str([key.name + ':{}'.format(len(v)) for key, v in p.items()])
     print(f'Packets found in file: {packets_in_file}')
 
+
     chan_type = fh.ChanInfo[0].TypeOfChannel
     if chan_type == XTFChannelType.stbd:
         print("XTF Channel is Starboard")
@@ -49,22 +50,8 @@ def convert_xtf_tiff(file_path: str, output_folder_path: str, output_bitdepth: i
         logging.info(f"Concatenating pings in channel")
         np_chan = concatenate_channel(p[XTFHeaderType.sonar], file_header=fh, channel=0, weighted=True)
 
-        #for ping in p[XTFHeaderType.sonar]:
-            #print(ping)
-            #print(ping.ping_chan_headers[0])
-            #print(ping.SlantRange, ping.GroundRange)
-        #    primary_altitude = ping.SensorPrimaryAltitude
-        #    calculated_altitude = np.sqrt(np.square(ping.ping_chan_headers[0].SlantRange) - np.square(ping.ping_chan_headers[0].GroundRange))
-        #    #print("Detaalt", primary_altitude-calculated_altitude)
-            #print(ping.XTFPingChanHeader)
-        #    print(ping.SensorYcoordinate, ping.SensorXcoordinate, ping.PingNumber, ping.SoundVelocity)
-        #print(fh.NavUnits, fh.NavigationLatency)
-        #print("VoltScale", fh.ChanInfo[0].VoltScale, "Frequency", fh.ChanInfo[0].Frequency, "SampleFormat", fh.ChanInfo[0].SampleFormat)
-        #print()
-     
-        #exit()
         np.set_printoptions(threshold=np.inf, linewidth=200, precision=3, formatter={'float': '{:,.0f}'.format}, suppress=True)  # Ensure entire array is displayed
-        
+
         print("Columns before cleanup:", np_chan.shape[1])
 
         # Start cutting columns where average value is below column_threshold, used to remove black sides
@@ -175,7 +162,7 @@ if __name__ == "__main__":
     parser.add_argument('-i', '--input', default="xtfs", type=str, help='Input folder.')
     parser.add_argument('-o', '--output', default="tiffs", type=str, help='Output folder.')
     parser.add_argument('-b', '--bitdepth', choices=[8,16], default=8, type=int, help='Bitdepth of output image, must be of the allowed values: 8 (default), 16.')
-    parser.add_argument('-rhw', '--resize_half_width', default=True, action='store_true', help='Resize to half width. (default True)')
+    parser.add_argument('-rhw', '--resize_half_width', default=False, action='store_true', help='Resize to half width. (default True)')
     parser.add_argument('-v', '--verbose', default=False, action='store_true', help='Verbose mode.')
     parser.add_argument('-heq', '--histogram_equalization', default=False, action='store_true', help='Histogram equalization. (default False)')
     parser.add_argument('-cth', '--column_threshold', default=7, type=int, help='Column threshold, avg col val to cut from data. Typical 0 to 7 (default). Set to -1 to disable')
