@@ -6,6 +6,7 @@ from PIL import Image, ImageTk
 from pathlib import Path
 import csv
 
+# Based on response from ChatGPT
 class ImageApp:
     def __init__(self, root, image_path):
         self.root = root

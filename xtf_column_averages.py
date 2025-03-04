@@ -5,9 +5,11 @@ from pathlib import Path
 import argparse
 import logging
 import matplotlib.pyplot as plt
+
 from pyxtf import xtf_read, concatenate_channel, XTFHeaderType, XTFChannelType
 
 
+# Based on response from ChatGPT
 (fh, p) = xtf_read('xtfs\\sasi-S-upper-20241207-135406-his05.xtf')
 n_channels = fh.channel_count(verbose=True)
 actual_chan_info = [fh.ChanInfo[i] for i in range(0, n_channels)]

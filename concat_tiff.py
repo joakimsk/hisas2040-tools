@@ -2,6 +2,7 @@ import argparse
 from PIL import Image
 from pathlib import Path
 
+# Based on response from ChatGPT
 def concat_tiff(tiff_path):
     folder = Path(tiff_path)
     if not folder.is_dir():

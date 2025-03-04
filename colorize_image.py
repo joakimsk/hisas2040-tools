@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 from PIL import Image
 
+# Based on response from ChatGPT
 my_colormap = LinearSegmentedColormap.from_list('mycolormap', ["#000000", "#ffa500", "#FFFFFF"], N=255)
 
 greyscale_image_path = 'tiffs\sasi-S-upper-20241207-135406-his05.tiff'

@@ -1,4 +1,5 @@
 .venv/
 output/
+input/
 __pycache__/
 roi/

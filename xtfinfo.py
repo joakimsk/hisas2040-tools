@@ -1,7 +1,7 @@
 import numpy as np
 from pyxtf import xtf_read, concatenate_channel, XTFHeaderType, XTFChannelType
 
-xtf_path = 'xtfs\sasi-P-upper-20240314-110550-wrk_l1.xtf'
+xtf_path = 'xtfs\\sasi-P-upper-20240314-110550-wrk_l1.xtf'
 
 def haversine(lat1, lon1, lat2, lon2):
     """

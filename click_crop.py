@@ -9,6 +9,7 @@ image = None
 input_file = None
 output_folder = None
 
+# Based on response from ChatGPT
 def click_and_crop(event, x, y, flags, param):
     global image, square_size, no_roi, clone, input_file, output_folder
     print(x,y)
